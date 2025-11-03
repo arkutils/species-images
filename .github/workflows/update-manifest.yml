@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - '**.png'
-      - '_manifest.json'
+      - '**_manifest.json'
 
 permissions:
   contents: write   # allow pushing commits back to PR branch
@@ -29,13 +29,13 @@ jobs:
         run: pipx install uv
 
       - name: Regenerate manifest
-        # run: uvx obelisk-manager update-manifest .
-        run: uvx git+https://github.com/arkutils/obelisk-manager.git update-manifest .
+        # run: uvx obelisk-manager update-manifest images/
+        run: uvx git+https://github.com/arkutils/obelisk-manager.git update-manifest images/
 
       - name: Detect manifest changes
         id: diff
         run: |
-          if git status --porcelain _manifest.json | grep -q .; then
+          if git status --porcelain images/_manifest.json | grep -q .; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -54,6 +54,6 @@ jobs:
       - name: Commit manifest
         if: steps.diff.outputs.changed == 'true'
         run: |
-          git add _manifest.json
+          git add images/_manifest.json
           git commit -m "Update manifest"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
