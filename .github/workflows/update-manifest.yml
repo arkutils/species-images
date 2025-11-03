@@ -1,0 +1,59 @@
+name: Update Manifest
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.png'
+      - '_manifest.json'
+
+permissions:
+  contents: write   # allow pushing commits back to PR branch
+  pull-requests: read
+
+jobs:
+  update-manifest:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install uv
+        run: pipx install uv
+
+      - name: Regenerate manifest
+        # run: uvx obelisk-manager update-manifest .
+        run: uvx git+https://github.com/arkutils/obelisk-manager.git update-manifest .
+
+      - name: Detect manifest changes
+        id: diff
+        run: |
+          if git status --porcelain _manifest.json | grep -q .; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure git auth for push
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          TOKEN: ${{ github.token }}
+          REMOTE: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REMOTE}.git"
+
+      - name: Commit manifest
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git add _manifest.json
+          git commit -m "Update manifest"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
