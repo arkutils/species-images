@@ -1,5 +1,13 @@
 {
 	"files": {
+		"!info.json": {
+			"version": "1",
+			"metadata": {
+				"name": "Official ASB species images",
+				"description": "Species images for ASE and ASA",
+				"creator": "ASA: Shen, ASE: cadaei, coldino, Myrmecoleon"
+			}
+		},
 		"Aberrant Achatina_ASA.png": { "hash": "md5:278daeb4d36b33b5552cc9cb9cdaec9a:98445" },
 		"Aberrant Achatina_ASA_m.png": { "hash": "md5:3efa8c87b8e0a14b9a11e68379337a8d:55261" },
 		"Aberrant Anglerfish_ASA.png": { "hash": "md5:d6a0cb6c6f1b2348ce5967149ef401e2:75822" },
