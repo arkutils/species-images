@@ -1,7 +1,6 @@
-name: Update Manifest
-
+name: Validate manifest
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - '**.png'
@@ -9,14 +8,11 @@ on:
       - '**_manifest.json'
 
 permissions:
-  contents: write   # allow pushing commits back to PR branch
-  pull-requests: read
+  contents: read
 
 jobs:
   update-manifest:
     runs-on: ubuntu-latest
-    # This workflow only runs if the PR is from the same repo or if maintainers can modify the PR - for PRs from forks
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request.maintainer_can_modify == true }}
 
     steps:
       - name: Checkout PR
@@ -33,32 +29,5 @@ jobs:
       - name: Install uv
         run: pipx install uv
 
-      - name: Regenerate manifest
-        # run: uvx obelisk-manager update-manifest images/
-        run: uvx git+https://github.com/arkutils/obelisk-manager.git update-manifest images/
-
-      - name: Detect manifest changes
-        id: diff
-        run: |
-          if git status --porcelain images/_manifest.json | grep -q .; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Configure git auth for push
-        if: steps.diff.outputs.changed == 'true'
-        env:
-          TOKEN: ${{ github.token }}
-          REMOTE: ${{ github.event.pull_request.head.repo.full_name }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REMOTE}.git"
-
-      - name: Commit manifest
-        if: steps.diff.outputs.changed == 'true'
-        run: |
-          git add images/_manifest.json
-          git commit -m "Update manifest"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+      - name: Check manifest
+        run: uvx git+https://github.com/arkutils/obelisk-manager.git check images/
