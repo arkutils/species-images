@@ -5,7 +5,12 @@ All images consist of a mask and regions so they can be coloured, approximating 
 
 ## Contributing
 
-Contributions should be via PR. A GitHub Action will automatically update the manifest file within the PR.
+Contributions should be via PR. A GitHub Action will automatically check the manifest file within the PR, so please either update the manifest using the below command or allow maintainer edits to the PR so it can be done for you.
+
+To update the manifest to include your images you should install the Python tool [UV](https://docs.astral.sh/uv/getting-started/installation/) and run the following command in the repository directory:
+```sh
+uvx git+https://github.com/arkutils/obelisk-manager.git update-manifest images/
+```
 
 Images contributed to this repository will be made available under MIT license.
 
@@ -27,4 +32,3 @@ As a summary, images must be in matching pairs of base colour (`<filename>.png`)
 * `variant` is the variant index (an integer >0), this can be used to add multiple creature poses the user can chose from
 
 All elements after `speciesname` are optional. The more elements present, the higher priority it will have.
-
